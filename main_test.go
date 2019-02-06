@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/julienschmidt/httprouter"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 	"net/http"
 	"net/http/httptest"
@@ -30,6 +31,9 @@ func TestShouldGetPosts(t *testing.T) {
 
 	// create app with mocked db, request and response to test
 	app := &api{db}
+	router := httprouter.New()
+	router.GET("/posts", app.posts)
+
 	req, err := http.NewRequest("GET", "http://localhost/posts", nil)
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected while creating request", err)
@@ -43,8 +47,7 @@ func TestShouldGetPosts(t *testing.T) {
 
 	mock.ExpectQuery("^SELECT (.+) FROM posts$").WillReturnRows(rows)
 
-	// now we execute our request
-	app.posts(w, req)
+	router.ServeHTTP(w, req)
 
 	if w.Code != 200 {
 		t.Fatalf("expected status code to be 200, but got: %d", w.Code)
@@ -73,6 +76,9 @@ func TestShouldRespondWithErrorOnFailure(t *testing.T) {
 
 	// create app with mocked db, request and response to test
 	app := &api{db}
+	router := httprouter.New()
+	router.GET("/posts", app.posts)
+
 	req, err := http.NewRequest("GET", "http://localhost/posts", nil)
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected while creating request", err)
@@ -82,8 +88,7 @@ func TestShouldRespondWithErrorOnFailure(t *testing.T) {
 	// before we actually execute our api function, we need to expect required DB actions
 	mock.ExpectQuery("^SELECT (.+) FROM posts$").WillReturnError(fmt.Errorf("some error"))
 
-	// now we execute our request
-	app.posts(w, req)
+	router.ServeHTTP(w, req)
 
 	if w.Code != 500 {
 		t.Fatalf("expected status code to be 500, but got: %d", w.Code)

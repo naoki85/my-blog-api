@@ -3,9 +3,9 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"net/http"
-
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/julienschmidt/httprouter"
+	"net/http"
 )
 
 type api struct {
@@ -19,7 +19,7 @@ type post struct {
 	PublishedAt string
 }
 
-func (a *api) posts(w http.ResponseWriter, r *http.Request) {
+func (a *api) posts(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	rows, err := a.db.Query("SELECT id, title, content, published_at FROM posts")
 	if err != nil {
 		a.fail(w, "failed to fetch posts: "+err.Error(), 500)
@@ -56,9 +56,10 @@ func main() {
 	}
 	defer db.Close()
 
+	router := httprouter.New()
 	app := &api{db: db}
-	http.HandleFunc("/posts", app.posts)
-	http.ListenAndServe(":8080", nil)
+	router.GET("/posts", app.posts)
+	http.ListenAndServe(":8080", router)
 }
 
 func (a *api) fail(w http.ResponseWriter, msg string, status int) {
