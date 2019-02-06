@@ -104,3 +104,77 @@ func TestShouldRespondWithErrorOnFailure(t *testing.T) {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
+
+func TestShouldGetPost(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	// create app with mocked db, request and response to test
+	app := &api{db}
+	router := httprouter.New()
+	router.GET("/posts/1", app.postById)
+
+	req, err := http.NewRequest("GET", "http://localhost/posts/1", nil)
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected while creating request", err)
+	}
+	w := httptest.NewRecorder()
+
+	// before we actually execute our api function, we need to expect required DB actions
+	rows := sqlmock.NewRows([]string{"id", "title", "content", "published_at"}).
+		AddRow(1, "test title 1", "test content 1", "2019-01-01 00:00:00")
+
+	mock.ExpectQuery("^SELECT (.+) FROM posts").WillReturnRows(rows)
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != 200 {
+		t.Fatalf("expected status code to be 200, but got: %d", w.Code)
+	}
+
+	data := post{ID: 1, Title: "test title 1", Content: "test content 1", PublishedAt: "2019-01-01 00:00:00"}
+	app.assertJSON(w.Body.Bytes(), data, t)
+
+	// we make sure that all expectations were met
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestShouldRespondWithErrorOnNoPost(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	// create app with mocked db, request and response to test
+	app := &api{db}
+	router := httprouter.New()
+	router.GET("/posts/1", app.postById)
+
+	req, err := http.NewRequest("GET", "http://localhost/posts/1", nil)
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected while creating request", err)
+	}
+	w := httptest.NewRecorder()
+
+	// before we actually execute our api function, we need to expect required DB actions
+	rows := sqlmock.NewRows([]string{"id", "title", "content", "published_at"})
+
+	mock.ExpectQuery("^SELECT (.+) FROM posts").WillReturnRows(rows)
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != 404 {
+		t.Fatalf("expected status code to be 200, but got: %d", w.Code)
+	}
+
+	// we make sure that all expectations were met
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
