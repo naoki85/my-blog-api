@@ -1,11 +1,14 @@
 package main
 
 import (
+	"./config"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
+	"os"
 )
 
 type api struct {
@@ -73,7 +76,11 @@ func (a *api) postById(w http.ResponseWriter, r *http.Request, p httprouter.Para
 }
 
 func main() {
-	db, err := sql.Open("mysql", "root:root@tcp(0.0.0.0:3306)/book_recorder_development")
+	initEnv()
+	c := config.Get()
+
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", c.Username, c.Password, c.Host, c.Port, c.Database)
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -108,4 +115,12 @@ func (a *api) ok(w http.ResponseWriter, data interface{}) {
 		return
 	}
 	w.Write(resp)
+}
+
+func initEnv() {
+	if len(os.Args) > 1 {
+		config.Init(os.Args[1])
+	} else {
+		config.Init("")
+	}
 }
