@@ -45,7 +45,7 @@ func TestShouldGetPosts(t *testing.T) {
 		AddRow(1, "test title 1", "test content 1", "2019-01-01 00:00:00").
 		AddRow(2, "test title 2", "test content 2", "2019-01-02 00:00:00")
 
-	mock.ExpectQuery("^SELECT (.+) FROM posts$").WillReturnRows(rows)
+	mock.ExpectQuery("^SELECT (.+) FROM posts .*").WillReturnRows(rows)
 
 	router.ServeHTTP(w, req)
 
@@ -86,7 +86,7 @@ func TestShouldRespondWithErrorOnFailure(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	// before we actually execute our api function, we need to expect required DB actions
-	mock.ExpectQuery("^SELECT (.+) FROM posts$").WillReturnError(fmt.Errorf("some error"))
+	mock.ExpectQuery("^SELECT (.+) FROM posts .*").WillReturnError(fmt.Errorf("some error"))
 
 	router.ServeHTTP(w, req)
 

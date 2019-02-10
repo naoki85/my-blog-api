@@ -9,6 +9,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"os"
+	"strconv"
+	"time"
 )
 
 type api struct {
@@ -22,8 +24,20 @@ type post struct {
 	PublishedAt string
 }
 
-func (a *api) posts(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	rows, err := a.db.Query("SELECT id, title, content, published_at FROM posts")
+func (a *api) posts(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	var page int
+	queryPageParam := r.URL.Query().Get("page")
+	if queryPageParam == "" {
+		page = 1
+	} else {
+		page, _ = strconv.Atoi(queryPageParam)
+	}
+	offset := 10 * (page - 1)
+
+	nowTime := time.Now()
+	query := "SELECT id, title, content, published_at FROM posts WHERE active = 1 AND published_at <= ?"
+	query = query + " ORDER BY published_at DESC LIMIT 10 OFFSET ?"
+	rows, err := a.db.Query(query, nowTime, offset)
 	if err != nil {
 		a.fail(w, "failed to fetch posts: "+err.Error(), 500)
 		return
@@ -54,7 +68,9 @@ func (a *api) posts(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 
 func (a *api) postById(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	postId := p.ByName("id")
-	rows, err := a.db.Query("SELECT id, title, content, published_at FROM posts WHERE id = ? LIMIT 1", postId)
+	nowTime := time.Now()
+	query := "SELECT id, title, content, published_at FROM posts WHERE id = ? AND active = 1 AND published_at <= ? LIMIT 1"
+	rows, err := a.db.Query(query, postId, nowTime)
 	if err != nil {
 		a.fail(w, "failed to fetch posts: "+err.Error(), 500)
 		return
