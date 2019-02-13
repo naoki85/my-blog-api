@@ -91,6 +91,17 @@ func (a *api) postById(w http.ResponseWriter, r *http.Request, p httprouter.Para
 	a.ok(w, retPost)
 }
 
+func (a *api) handleOption(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	w.Header().Add("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Add("Access-Control-Allow-Headers", "Origin")
+	w.Header().Add("Access-Control-Allow-Headers", "X-Requested-With")
+	w.Header().Add("Access-Control-Allow-Headers", "Accept")
+	w.Header().Add("Access-Control-Allow-Headers", "Accept-Language")
+	w.Header().Set("Content-Type", "application/json")
+}
+
 func main() {
 	initEnv()
 	c := config.Get()
@@ -104,6 +115,8 @@ func main() {
 
 	router := httprouter.New()
 	app := &api{db: db}
+
+	router.OPTIONS("/*path", app.handleOption)
 	router.GET("/posts/:id", app.postById)
 	router.GET("/posts", app.posts)
 	http.ListenAndServe(":8080", router)
@@ -111,6 +124,7 @@ func main() {
 
 func (a *api) fail(w http.ResponseWriter, msg string, status int) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	data := struct {
 		Error string
@@ -123,6 +137,7 @@ func (a *api) fail(w http.ResponseWriter, msg string, status int) {
 
 func (a *api) ok(w http.ResponseWriter, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	resp, err := json.Marshal(data)
 	if err != nil {
