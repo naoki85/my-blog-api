@@ -18,10 +18,11 @@ type api struct {
 }
 
 type post struct {
-	ID          int
-	Title       string
-	Content     string
-	PublishedAt string
+	ID             int
+	PostCategoryId int
+	Title          string
+	Content        string
+	PublishedAt    string
 }
 
 func (a *api) posts(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -35,7 +36,7 @@ func (a *api) posts(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 	offset := 10 * (page - 1)
 
 	nowTime := time.Now()
-	query := "SELECT id, title, content, published_at FROM posts WHERE active = 1 AND published_at <= ?"
+	query := "SELECT id, post_category_id, title, content, published_at FROM posts WHERE active = 1 AND published_at <= ?"
 	query = query + " ORDER BY published_at DESC LIMIT 10 OFFSET ?"
 	rows, err := a.db.Query(query, nowTime, offset)
 	if err != nil {
@@ -47,7 +48,7 @@ func (a *api) posts(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 	var posts []*post
 	for rows.Next() {
 		p := &post{}
-		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.PublishedAt); err != nil {
+		if err := rows.Scan(&p.ID, &p.PostCategoryId, &p.Title, &p.Content, &p.PublishedAt); err != nil {
 			a.fail(w, "failed to scan post: "+err.Error(), 500)
 			return
 		}
@@ -69,7 +70,7 @@ func (a *api) posts(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 func (a *api) postById(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	postId := p.ByName("id")
 	nowTime := time.Now()
-	query := "SELECT id, title, content, published_at FROM posts WHERE id = ? AND active = 1 AND published_at <= ? LIMIT 1"
+	query := "SELECT id, post_category_id, title, content, published_at FROM posts WHERE id = ? AND active = 1 AND published_at <= ? LIMIT 1"
 	rows, err := a.db.Query(query, postId, nowTime)
 	if err != nil {
 		a.fail(w, "failed to fetch posts: "+err.Error(), 500)
@@ -79,7 +80,7 @@ func (a *api) postById(w http.ResponseWriter, r *http.Request, p httprouter.Para
 
 	var retPost post
 	for rows.Next() {
-		if err := rows.Scan(&retPost.ID, &retPost.Title, &retPost.Content, &retPost.PublishedAt); err != nil {
+		if err := rows.Scan(&retPost.ID, &retPost.PostCategoryId, &retPost.Title, &retPost.Content, &retPost.PublishedAt); err != nil {
 			a.fail(w, "failed to scan post: "+err.Error(), 500)
 			return
 		}
