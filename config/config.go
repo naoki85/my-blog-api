@@ -3,6 +3,7 @@ package config
 import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"os"
 	"sync"
 )
 
@@ -28,8 +29,15 @@ func Init(e string) {
 			env = "production"
 		}
 
+		p, err := os.Getwd()
+		if err != nil {
+			panic(err)
+		}
+		var filePath string
+		filePath = p + "/config/database.yml"
+
 		var conf map[string]Config
-		buf, err := ioutil.ReadFile("config/database.yml")
+		buf, err := ioutil.ReadFile(filePath)
 		if err != nil {
 			panic(err)
 		}
