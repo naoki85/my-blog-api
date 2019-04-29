@@ -78,28 +78,21 @@ func (a *api) posts(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 }
 
 func (a *api) postById(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	postId := p.ByName("id")
-	nowTime := time.Now()
-	query := "SELECT id, post_category_id, title, content, published_at FROM posts WHERE id = ? AND active = 1 AND published_at <= ? LIMIT 1"
-	rows, err := a.db.Query(query, postId, nowTime)
+	postId, err := strconv.Atoi(p.ByName("id"))
+	if err != nil {
+		a.fail(w, "Not Found", 404)
+		return
+	}
+	post, err := FindPostById(a.db, postId)
 	if err != nil {
 		a.fail(w, "failed to fetch posts: "+err.Error(), 500)
 		return
 	}
-	defer rows.Close()
-
-	var retPost post
-	for rows.Next() {
-		if err := rows.Scan(&retPost.ID, &retPost.PostCategoryId, &retPost.Title, &retPost.Content, &retPost.PublishedAt); err != nil {
-			a.fail(w, "failed to scan post: "+err.Error(), 500)
-			return
-		}
-	}
-	if retPost.ID == 0 && retPost.Title == "" {
+	if post.Id == 0 && post.Title == "" {
 		a.fail(w, "Not found", 404)
 		return
 	}
-	a.ok(w, retPost)
+	a.ok(w, post)
 }
 
 func (a *api) handleOption(w http.ResponseWriter, r *http.Request, p httprouter.Params) {

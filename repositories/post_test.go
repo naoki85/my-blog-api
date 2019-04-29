@@ -16,7 +16,7 @@ func TestShouldFindPostById(t *testing.T) {
 		AddRow(1, 1, "test title 1", "test content 1", "2019-01-01 00:00:00")
 	mock.ExpectQuery("^SELECT (.+) FROM posts").WillReturnRows(rows)
 
-	post, err := findPostById(db, 1)
+	post, err := FindPostById(db, 1)
 	if err != nil {
 		t.Fatalf("Cannot get post: %s", err)
 	}
