@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -19,10 +20,10 @@ type api struct {
 }
 
 type post struct {
-	ID             int
+	Id             int
 	PostCategoryId int
 	Title          string
-	Content        string
+	ImageUrl       string
 	PublishedAt    string
 	PostCategory   PostCategory
 }
@@ -38,7 +39,7 @@ func (a *api) posts(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 	offset := 10 * (page - 1)
 
 	nowTime := time.Now()
-	query := "SELECT id, post_category_id, title, content, published_at FROM posts WHERE active = 1 AND published_at <= ?"
+	query := "SELECT id, post_category_id, title, image_file_name, published_at FROM posts WHERE active = 1 AND published_at <= ?"
 	query = query + " ORDER BY published_at DESC LIMIT 10 OFFSET ?"
 	rows, err := a.db.Query(query, nowTime, offset)
 	if err != nil {
@@ -50,7 +51,7 @@ func (a *api) posts(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 	var posts []*post
 	for rows.Next() {
 		p := &post{}
-		if err := rows.Scan(&p.ID, &p.PostCategoryId, &p.Title, &p.Content, &p.PublishedAt); err != nil {
+		if err := rows.Scan(&p.Id, &p.PostCategoryId, &p.Title, &p.ImageUrl, &p.PublishedAt); err != nil {
 			a.fail(w, "failed to scan post: "+err.Error(), 500)
 			return
 		}
@@ -61,6 +62,8 @@ func (a *api) posts(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 			return
 		}
 		p.PostCategory = postCategory
+		p.ImageUrl = "http://d29xhtkvbwm2ne.cloudfront.net/" + p.ImageUrl
+		p.PublishedAt = strings.Split(p.PublishedAt, " ")[0]
 
 		posts = append(posts, p)
 	}
@@ -92,11 +95,16 @@ func (a *api) postById(w http.ResponseWriter, r *http.Request, p httprouter.Para
 		a.fail(w, "Not found", 404)
 		return
 	}
+	post.PublishedAt = strings.Split(post.PublishedAt, " ")[0]
 	a.ok(w, post)
 }
 
 func (a *api) handleOption(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	w.Header().Add("Access-Control-Allow-Origin", "http://localhost:3000")
+	if len(os.Args) > 1 {
+		w.Header().Add("Access-Control-Allow-Origin", "http://localhost:3035")
+	} else {
+		w.Header().Add("Access-Control-Allow-Origin", "http://naoki85.me")
+	}
 	w.Header().Set("Access-Control-Allow-Methods", "*")
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 	w.Header().Add("Access-Control-Allow-Headers", "Origin")

@@ -57,8 +57,8 @@ func TestShouldGetPosts(t *testing.T) {
 	data := struct {
 		Posts []*post
 	}{Posts: []*post{
-		{ID: 1, PostCategoryId: 1, Title: "test title 1", Content: "test content 1", PublishedAt: "2019-01-01 00:00:00"},
-		{ID: 2, PostCategoryId: 1, Title: "test title 2", Content: "test content 2", PublishedAt: "2019-01-02 00:00:00"},
+		{Id: 1, PostCategoryId: 1, Title: "test title 1", ImageUrl: "test.jpg", PublishedAt: "2019-01-01 00:00:00"},
+		{Id: 2, PostCategoryId: 1, Title: "test title 2", ImageUrl: "test2.jpg", PublishedAt: "2019-01-02 00:00:00"},
 	}}
 	app.assertJSON(w.Body.Bytes(), data, t)
 
@@ -137,7 +137,7 @@ func TestShouldGetPost(t *testing.T) {
 		t.Fatalf("expected status code to be 200, but got: %d", w.Code)
 	}
 
-	data := post{ID: 1, PostCategoryId: 1, Title: "test title 1", Content: "test content 1", PublishedAt: "2019-01-01 00:00:00"}
+	data := post{Id: 1, PostCategoryId: 1, Title: "test title 1", ImageUrl: "test.jpg", PublishedAt: "2019-01-01 00:00:00"}
 	app.assertJSON(w.Body.Bytes(), data, t)
 
 	// we make sure that all expectations were met
