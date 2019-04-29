@@ -2,6 +2,7 @@ package main
 
 import (
 	"./config"
+	. "./repositories"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -23,6 +24,7 @@ type post struct {
 	Title          string
 	Content        string
 	PublishedAt    string
+	PostCategory   PostCategory
 }
 
 func (a *api) posts(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -52,6 +54,14 @@ func (a *api) posts(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 			a.fail(w, "failed to scan post: "+err.Error(), 500)
 			return
 		}
+
+		postCategory, err := FindPostCategoryById(a.db, p.PostCategoryId)
+		if err != nil {
+			a.fail(w, "failed to scan post_categories: "+err.Error(), 500)
+			return
+		}
+		p.PostCategory = postCategory
+
 		posts = append(posts, p)
 	}
 
