@@ -68,14 +68,26 @@ func (a *api) posts(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 		posts = append(posts, p)
 	}
 
+	count, err := GetPostsCount(a.db)
+	if err != nil {
+		a.fail(w, "failed to scan posts count: "+err.Error(), 500)
+		return
+	}
+	totalPage := count / 10
+	mod := count % 10
+	if mod != 0 {
+		totalPage = totalPage + 1
+	}
+
 	if rows.Err() != nil {
 		a.fail(w, "failed to read all posts: "+rows.Err().Error(), 500)
 		return
 	}
 
 	data := struct {
-		Posts []*post
-	}{posts}
+		TotalPage int
+		Posts     []*post
+	}{totalPage, posts}
 
 	a.ok(w, data)
 }
