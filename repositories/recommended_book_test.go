@@ -19,7 +19,7 @@ func TestShouldFindAllRecommendedBooks(t *testing.T) {
 		AddRow(4, "http://naoki85.test", "http://naoki85.test/image", "http://naoki85.test/button")
 	mock.ExpectQuery("^SELECT (.+) FROM recommended_books .*").WillReturnRows(rows)
 
-	recommendedBooks, err := FindAllRecommendedBooks(db, ParamsForFindAll{limit: 4})
+	recommendedBooks, err := FindAllRecommendedBooks(db, ParamsForFindAll{Limit: 4})
 	if err != nil {
 		t.Fatalf("Cannot get recommended_books: %s", err)
 	}
