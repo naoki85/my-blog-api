@@ -7,7 +7,7 @@ while getopts h: OPT; do
   esac
 done
 
-if ["$HOST" == ""]; then
+if [[ "$HOST" == "" ]]; then
   echo "Parameter must be given."
   exit 1
 fi
