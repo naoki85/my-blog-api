@@ -108,6 +108,7 @@ func (a *api) postById(w http.ResponseWriter, r *http.Request, p httprouter.Para
 		return
 	}
 	post.PublishedAt = strings.Split(post.PublishedAt, " ")[0]
+	post.ImageUrl = "http://d29xhtkvbwm2ne.cloudfront.net/" + post.ImageUrl
 	a.ok(w, post)
 }
 
@@ -127,7 +128,7 @@ func (a *api) recommendedBooks(w http.ResponseWriter, r *http.Request, p httprou
 
 func (a *api) handleOption(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	if len(os.Args) > 1 {
-		w.Header().Add("Access-Control-Allow-Origin", "http://localhost:3035")
+		w.Header().Add("Access-Control-Allow-Origin", "http://localhost:3000")
 	} else {
 		w.Header().Add("Access-Control-Allow-Origin", "http://naoki85.me")
 	}
