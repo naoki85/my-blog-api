@@ -19,38 +19,33 @@ type api struct {
 	db *sql.DB
 }
 
-type post struct {
-	Id             int
-	PostCategoryId int
-	Title          string
-	ImageUrl       string
-	PublishedAt    string
-	PostCategory   PostCategory
-}
-
 func (a *api) posts(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	var page int
 	queryPageParam := r.URL.Query().Get("page")
+	nowTime := time.Now()
+	query := "SELECT id, post_category_id, title, image_file_name, published_at FROM posts WHERE active = 1 AND published_at <= ? ORDER BY published_at DESC"
+
+	var rows *sql.Rows
+	var err error
+
 	if queryPageParam == "" {
-		page = 1
+		rows, err = a.db.Query(query, nowTime)
 	} else {
 		page, _ = strconv.Atoi(queryPageParam)
+		offset := 10 * (page - 1)
+		query = query + " LIMIT 10 OFFSET ?"
+		rows, err = a.db.Query(query, nowTime, offset)
 	}
-	offset := 10 * (page - 1)
 
-	nowTime := time.Now()
-	query := "SELECT id, post_category_id, title, image_file_name, published_at FROM posts WHERE active = 1 AND published_at <= ?"
-	query = query + " ORDER BY published_at DESC LIMIT 10 OFFSET ?"
-	rows, err := a.db.Query(query, nowTime, offset)
 	if err != nil {
 		a.fail(w, "failed to fetch posts: "+err.Error(), 500)
 		return
 	}
 	defer rows.Close()
 
-	var posts []*post
+	var posts []*Post
 	for rows.Next() {
-		p := &post{}
+		p := &Post{}
 		if err := rows.Scan(&p.Id, &p.PostCategoryId, &p.Title, &p.ImageUrl, &p.PublishedAt); err != nil {
 			a.fail(w, "failed to scan post: "+err.Error(), 500)
 			return
@@ -86,7 +81,7 @@ func (a *api) posts(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 
 	data := struct {
 		TotalPage int
-		Posts     []*post
+		Posts     []*Post
 	}{totalPage, posts}
 
 	a.ok(w, data)
@@ -130,7 +125,7 @@ func (a *api) handleOption(w http.ResponseWriter, r *http.Request, p httprouter.
 	if len(os.Args) > 1 {
 		w.Header().Add("Access-Control-Allow-Origin", "http://localhost:3000")
 	} else {
-		w.Header().Add("Access-Control-Allow-Origin", "http://naoki85.me")
+		w.Header().Add("Access-Control-Allow-Origin", "https://blog.naoki85.me")
 	}
 	w.Header().Set("Access-Control-Allow-Methods", "*")
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
