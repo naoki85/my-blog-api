@@ -22,20 +22,20 @@ type api struct {
 func (a *api) posts(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	var page int
 	queryPageParam := r.URL.Query().Get("page")
+	if queryPageParam == "" {
+		page = 1
+	} else {
+		page, _ = strconv.Atoi(queryPageParam)
+	}
 	nowTime := time.Now()
-	query := "SELECT id, post_category_id, title, image_file_name, published_at FROM posts WHERE active = 1 AND published_at <= ? ORDER BY published_at DESC"
 
 	var rows *sql.Rows
 	var err error
 
-	if queryPageParam == "" {
-		rows, err = a.db.Query(query, nowTime)
-	} else {
-		page, _ = strconv.Atoi(queryPageParam)
-		offset := 10 * (page - 1)
-		query = query + " LIMIT 10 OFFSET ?"
-		rows, err = a.db.Query(query, nowTime, offset)
-	}
+	query := "SELECT id, post_category_id, title, image_file_name, published_at FROM posts WHERE active = 1 AND published_at <= ? ORDER BY published_at DESC"
+	query = query + " LIMIT 10 OFFSET ?"
+	offset := 10 * (page - 1)
+	rows, err = a.db.Query(query, nowTime, offset)
 
 	if err != nil {
 		a.fail(w, "failed to fetch posts: "+err.Error(), 500)
@@ -107,6 +107,20 @@ func (a *api) postById(w http.ResponseWriter, r *http.Request, p httprouter.Para
 	a.ok(w, post)
 }
 
+func (a *api) allPosts(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	posts, err := FindAllPosts(a.db)
+	if err != nil {
+		a.fail(w, "Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	data := struct {
+		Posts []*Post
+	}{posts}
+
+	a.ok(w, data)
+}
+
 func (a *api) recommendedBooks(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	recommendedBooks, err := FindAllRecommendedBooks(a.db, ParamsForFindAll{Limit: 4})
 	if err != nil {
@@ -151,6 +165,7 @@ func main() {
 	app := &api{db: db}
 
 	router.OPTIONS("/*path", app.handleOption)
+	router.GET("/all_posts", app.allPosts)
 	router.GET("/posts/:id", app.postById)
 	router.GET("/posts", app.posts)
 	router.GET("/recommended_books", app.recommendedBooks)
