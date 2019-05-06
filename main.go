@@ -58,7 +58,7 @@ func (a *api) posts(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 		}
 		p.PostCategory = postCategory
 		p.ImageUrl = "http://d29xhtkvbwm2ne.cloudfront.net/" + p.ImageUrl
-		p.PublishedAt = strings.Split(p.PublishedAt, " ")[0]
+		p.PublishedAt = strings.Split(p.PublishedAt, "T")[0]
 
 		posts = append(posts, p)
 	}
@@ -102,7 +102,7 @@ func (a *api) postById(w http.ResponseWriter, r *http.Request, p httprouter.Para
 		a.fail(w, "Not found", 404)
 		return
 	}
-	post.PublishedAt = strings.Split(post.PublishedAt, " ")[0]
+	post.PublishedAt = strings.Split(post.PublishedAt, "T")[0]
 	post.ImageUrl = "http://d29xhtkvbwm2ne.cloudfront.net/" + post.ImageUrl
 	a.ok(w, post)
 }
@@ -112,6 +112,10 @@ func (a *api) allPosts(w http.ResponseWriter, r *http.Request, p httprouter.Para
 	if err != nil {
 		a.fail(w, "Server Error", http.StatusInternalServerError)
 		return
+	}
+
+	for _, p := range posts {
+		p.PublishedAt = strings.Split(p.PublishedAt, "T")[0]
 	}
 
 	data := struct {
@@ -154,7 +158,7 @@ func main() {
 	initEnv()
 	c := config.Get()
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", c.Username, c.Password, c.Host, c.Port, c.Database)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&loc=Local", c.Username, c.Password, c.Host, c.Port, c.Database)
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		panic(err.Error())
