@@ -1,15 +1,9 @@
 package repositories
 
 import (
+	. "../models"
 	"database/sql"
 )
-
-type RecommendedBook struct {
-	Id        int
-	Link      string
-	ImageUrl  string
-	ButtonUrl string
-}
 
 type ParamsForFindAll struct {
 	Limit int
