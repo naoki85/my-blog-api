@@ -2,6 +2,7 @@ package main
 
 import (
 	"./config"
+	. "./models"
 	. "./repositories"
 	"database/sql"
 	"encoding/json"
