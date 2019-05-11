@@ -7,6 +7,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/julienschmidt/httprouter"
 	"github.com/naoki85/my_blog_api/config"
+	"github.com/naoki85/my_blog_api/infrastructure"
+	"github.com/naoki85/my_blog_api/interfaces/controllers"
 	. "github.com/naoki85/my_blog_api/models"
 	. "github.com/naoki85/my_blog_api/repositories"
 	"net/http"
@@ -173,8 +175,14 @@ func main() {
 	router.GET("/all_posts", app.allPosts)
 	router.GET("/posts/:id", app.postById)
 	router.GET("/posts", app.posts)
-	router.GET("/recommended_books", app.recommendedBooks)
+	router.GET("/recommended_books", newRecommendedBooks)
 	http.ListenAndServe(":8080", router)
+}
+
+func newRecommendedBooks(w controllers.ResponseWriter, r *controllers.Request, p controllers.Params) {
+	sqlHandler, _ := infrastructure.NewSqlHandler()
+	recommndedBookController := controllers.NewRecommendedBookController(sqlHandler)
+	recommndedBookController.Index(w, r, p)
 }
 
 func (a *api) fail(w http.ResponseWriter, msg string, status int) {

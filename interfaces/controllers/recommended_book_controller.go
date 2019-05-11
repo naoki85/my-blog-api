@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/naoki85/my_blog_api/interfaces/database"
+	"github.com/naoki85/my_blog_api/models"
 	"github.com/naoki85/my_blog_api/usecase"
 	"strconv"
 )
@@ -20,12 +21,16 @@ func NewRecommendedBookController(sqlHandler database.SqlHandler) *RecommendedBo
 	}
 }
 
-func (controller *RecommendedBookController) Index(c Context) {
-	limit, _ := strconv.Atoi(c.Param("limit"))
+func (controller *RecommendedBookController) Index(w ResponseWriter, r Request, p Params) {
+	limit, _ := strconv.Atoi(p.ByName("limit"))
 	recommendedBooks, err := controller.Interactor.RecommendedBookRepository.All(limit)
 	if err != nil {
-		c.JSON(404, err.Error())
+		fail(w, err.Error(), 404)
 		return
 	}
-	c.JSON(200, recommendedBooks)
+
+	data := struct {
+		RecommendedBooks models.RecommendedBooks
+	}{recommendedBooks}
+	ok(w, data)
 }

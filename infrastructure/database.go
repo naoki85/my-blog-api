@@ -26,7 +26,7 @@ type Config struct {
 var instance *Config
 var once sync.Once
 
-func NewSqlHandler() (*SqlHandler, error) {
+func NewSqlHandler() (database.SqlHandler, error) {
 	Init()
 	c := Get()
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&loc=Local", c.Username, c.Password, c.Host, c.Port, c.Database)
