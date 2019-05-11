@@ -1,8 +1,8 @@
 package repositories
 
 import (
-	. "../models"
 	"database/sql"
+	. "github.com/naoki85/my_blog_api/models"
 )
 
 func FindPostCategoryById(db *sql.DB, id int) (post_category PostCategory, err error) {

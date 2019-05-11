@@ -1,11 +1,11 @@
 package main
 
 import (
-	. "./models"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
+	. "github.com/naoki85/my_blog_api/models"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 	"net/http"
 	"net/http/httptest"

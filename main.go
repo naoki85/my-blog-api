@@ -1,14 +1,14 @@
 package main
 
 import (
-	"./config"
-	. "./models"
-	. "./repositories"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/julienschmidt/httprouter"
+	"github.com/naoki85/my_blog_api/config"
+	. "github.com/naoki85/my_blog_api/models"
+	. "github.com/naoki85/my_blog_api/repositories"
 	"net/http"
 	"os"
 	"strconv"

@@ -1,8 +1,8 @@
 package repositories
 
 import (
-	. "../models"
 	"database/sql"
+	. "github.com/naoki85/my_blog_api/models"
 )
 
 type ParamsForFindAll struct {

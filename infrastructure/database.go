@@ -1,10 +1,10 @@
 package infrastructure
 
 import (
-	"../interfaces/database"
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/naoki85/my_blog_api/interfaces/database"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
