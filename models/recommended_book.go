@@ -6,3 +6,5 @@ type RecommendedBook struct {
 	ImageUrl  string
 	ButtonUrl string
 }
+
+type RecommendedBooks []RecommendedBook
