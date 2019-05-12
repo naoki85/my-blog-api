@@ -4,7 +4,6 @@ import (
 	"github.com/naoki85/my_blog_api/interfaces/database"
 	"github.com/naoki85/my_blog_api/models"
 	"github.com/naoki85/my_blog_api/usecase"
-	"strconv"
 )
 
 type RecommendedBookController struct {
@@ -22,7 +21,7 @@ func NewRecommendedBookController(sqlHandler database.SqlHandler) *RecommendedBo
 }
 
 func (controller *RecommendedBookController) Index(w ResponseWriter, r Request, p Params) {
-	limit, _ := strconv.Atoi(p.ByName("limit"))
+	limit := 4
 	recommendedBooks, err := controller.Interactor.RecommendedBookRepository.All(limit)
 	if err != nil {
 		fail(w, err.Error(), 404)

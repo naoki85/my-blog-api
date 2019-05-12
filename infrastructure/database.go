@@ -34,7 +34,6 @@ func NewSqlHandler() (database.SqlHandler, error) {
 	if err != nil {
 		panic(err.Error)
 	}
-	defer conn.Close()
 	sqlHandler := new(SqlHandler)
 	sqlHandler.Conn = conn
 	return sqlHandler, err
@@ -94,7 +93,7 @@ func Get() *Config {
 
 func Init() {
 	var env string
-	env = "test"
+	env = "development"
 
 	once.Do(func() {
 		p, err := os.Getwd()
@@ -102,7 +101,7 @@ func Init() {
 			panic(err)
 		}
 		var filePath string
-		filePath = p + "/../config/database.yml"
+		filePath = p + "/config/database.yml"
 
 		var conf map[string]Config
 		buf, err := ioutil.ReadFile(filePath)

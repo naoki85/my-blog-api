@@ -175,14 +175,15 @@ func main() {
 	router.GET("/all_posts", app.allPosts)
 	router.GET("/posts/:id", app.postById)
 	router.GET("/posts", app.posts)
-	router.GET("/recommended_books", newRecommendedBooks)
+	router.GET("/recommended_books", app.recommendedBooks)
+	router.GET("/new_recommended_books", NewRecommendedBooks)
 	http.ListenAndServe(":8080", router)
 }
 
-func newRecommendedBooks(w controllers.ResponseWriter, r *controllers.Request, p controllers.Params) {
+func NewRecommendedBooks(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	sqlHandler, _ := infrastructure.NewSqlHandler()
-	recommndedBookController := controllers.NewRecommendedBookController(sqlHandler)
-	recommndedBookController.Index(w, r, p)
+	recommendedBookController := controllers.NewRecommendedBookController(sqlHandler)
+	recommendedBookController.Index(w, r, p)
 }
 
 func (a *api) fail(w http.ResponseWriter, msg string, status int) {

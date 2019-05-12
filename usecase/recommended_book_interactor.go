@@ -9,6 +9,6 @@ type RecommendedBookInteractor struct {
 }
 
 func (interactor *RecommendedBookInteractor) all(limit int) (models.RecommendedBooks, error) {
-	recommendedBooks, err := interactor.RecommendedBookRepository.all(limit)
+	recommendedBooks, err := interactor.RecommendedBookRepository.All(limit)
 	return recommendedBooks, err
 }
