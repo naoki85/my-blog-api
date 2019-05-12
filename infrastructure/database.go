@@ -27,7 +27,11 @@ var instance *Config
 var once sync.Once
 
 func NewSqlHandler() (database.SqlHandler, error) {
-	Init()
+	if len(os.Args) > 1 {
+		Init(os.Args[1])
+	} else {
+		Init("")
+	}
 	c := Get()
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&loc=Local", c.Username, c.Password, c.Host, c.Port, c.Database)
 	conn, err := sql.Open("mysql", dsn)
@@ -91,9 +95,11 @@ func Get() *Config {
 	return instance
 }
 
-func Init() {
-	var env string
-	env = "development"
+func Init(e string) {
+	env := e
+	if e == "" {
+		env = "production"
+	}
 
 	once.Do(func() {
 		p, err := os.Getwd()
@@ -101,7 +107,7 @@ func Init() {
 			panic(err)
 		}
 		var filePath string
-		filePath = p + "/config/database.yml"
+		filePath = p + "/infrastructure/config/database.yml"
 
 		var conf map[string]Config
 		buf, err := ioutil.ReadFile(filePath)
