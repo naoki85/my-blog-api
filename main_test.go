@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
+	. "github.com/naoki85/my_blog_api/models"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 	"net/http"
 	"net/http/httptest"
@@ -55,8 +56,8 @@ func TestShouldGetPosts(t *testing.T) {
 	}
 
 	data := struct {
-		Posts []*post
-	}{Posts: []*post{
+		Posts []*Post
+	}{Posts: []*Post{
 		{Id: 1, PostCategoryId: 1, Title: "test title 1", ImageUrl: "test.jpg", PublishedAt: "2019-01-01 00:00:00"},
 		{Id: 2, PostCategoryId: 1, Title: "test title 2", ImageUrl: "test2.jpg", PublishedAt: "2019-01-02 00:00:00"},
 	}}
@@ -137,7 +138,7 @@ func TestShouldGetPost(t *testing.T) {
 		t.Fatalf("expected status code to be 200, but got: %d", w.Code)
 	}
 
-	data := post{Id: 1, PostCategoryId: 1, Title: "test title 1", ImageUrl: "test.jpg", PublishedAt: "2019-01-01 00:00:00"}
+	data := Post{Id: 1, PostCategoryId: 1, Title: "test title 1", ImageUrl: "test.jpg", PublishedAt: "2019-01-01 00:00:00"}
 	app.assertJSON(w.Body.Bytes(), data, t)
 
 	// we make sure that all expectations were met

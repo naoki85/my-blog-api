@@ -2,13 +2,8 @@ package repositories
 
 import (
 	"database/sql"
+	. "github.com/naoki85/my_blog_api/models"
 )
-
-type PostCategory struct {
-	Id    int
-	Name  string
-	Color string
-}
 
 func FindPostCategoryById(db *sql.DB, id int) (post_category PostCategory, err error) {
 	err = db.QueryRow("SELECT id, name, color FROM post_categories WHERE id = ?", id).

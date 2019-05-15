@@ -1,13 +1,16 @@
 package main
 
 import (
-	"./config"
-	. "./repositories"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/julienschmidt/httprouter"
+	"github.com/naoki85/my_blog_api/config"
+	"github.com/naoki85/my_blog_api/infrastructure"
+	"github.com/naoki85/my_blog_api/interfaces/controllers"
+	. "github.com/naoki85/my_blog_api/models"
+	. "github.com/naoki85/my_blog_api/repositories"
 	"net/http"
 	"os"
 	"strconv"
@@ -125,23 +128,9 @@ func (a *api) allPosts(w http.ResponseWriter, r *http.Request, p httprouter.Para
 	a.ok(w, data)
 }
 
-func (a *api) recommendedBooks(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	recommendedBooks, err := FindAllRecommendedBooks(a.db, ParamsForFindAll{Limit: 4})
-	if err != nil {
-		a.fail(w, "Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	data := struct {
-		RecommendedBooks []*RecommendedBook
-	}{recommendedBooks}
-
-	a.ok(w, data)
-}
-
 func (a *api) handleOption(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	if len(os.Args) > 1 {
-		w.Header().Add("Access-Control-Allow-Origin", "http://localhost:3000")
+		w.Header().Add("Access-Control-Allow-Origin", "http://localhost:3035")
 	} else {
 		w.Header().Add("Access-Control-Allow-Origin", "https://blog.naoki85.me")
 	}
@@ -172,8 +161,14 @@ func main() {
 	router.GET("/all_posts", app.allPosts)
 	router.GET("/posts/:id", app.postById)
 	router.GET("/posts", app.posts)
-	router.GET("/recommended_books", app.recommendedBooks)
+	router.GET("/recommended_books", NewRecommendedBooks)
 	http.ListenAndServe(":8080", router)
+}
+
+func NewRecommendedBooks(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	sqlHandler, _ := infrastructure.NewSqlHandler()
+	recommendedBookController := controllers.NewRecommendedBookController(sqlHandler)
+	recommendedBookController.Index(w, r, p)
 }
 
 func (a *api) fail(w http.ResponseWriter, msg string, status int) {

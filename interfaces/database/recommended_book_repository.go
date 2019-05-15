@@ -1,31 +1,24 @@
-package repositories
+package database
 
 import (
-	"database/sql"
+	"github.com/naoki85/my_blog_api/models"
 )
 
-type RecommendedBook struct {
-	Id        int
-	Link      string
-	ImageUrl  string
-	ButtonUrl string
+type RecommendedBookRepository struct {
+	SqlHandler
 }
 
-type ParamsForFindAll struct {
-	Limit int
-}
-
-func FindAllRecommendedBooks(db *sql.DB, params ParamsForFindAll) (recommendedBooks []*RecommendedBook, err error) {
+func (repo *RecommendedBookRepository) All(limit int) (recommendedBooks models.RecommendedBooks, err error) {
 	query := "SELECT id, link, image_url, button_url FROM recommended_books"
 	query = query + " ORDER BY id DESC LIMIT ?"
-	rows, err := db.Query(query, params.Limit)
+	rows, err := repo.SqlHandler.Query(query, limit)
 	defer rows.Close()
 	if err != nil {
 		return recommendedBooks, err
 	}
 
 	for rows.Next() {
-		r := &RecommendedBook{}
+		r := models.RecommendedBook{}
 		if err := rows.Scan(&r.Id, &r.Link, &r.ImageUrl, &r.ButtonUrl); err != nil {
 			return recommendedBooks, err
 		}

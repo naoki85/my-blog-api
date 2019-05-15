@@ -35,7 +35,7 @@ $ go run main.go development
 ### Test
 
 ```
-$ go test
+$ ENV=test go test ./..
 ```
 
 ### Build

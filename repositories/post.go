@@ -2,19 +2,10 @@ package repositories
 
 import (
 	"database/sql"
+	. "github.com/naoki85/my_blog_api/models"
 	"strings"
 	"time"
 )
-
-type Post struct {
-	Id             int
-	PostCategoryId int
-	Title          string
-	Content        string
-	ImageUrl       string
-	PublishedAt    string
-	PostCategory   PostCategory
-}
 
 func FindPostById(db *sql.DB, id int) (post Post, err error) {
 	nowTime := time.Now()
