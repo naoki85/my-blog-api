@@ -99,6 +99,8 @@ func Init(e string) {
 	env := e
 	if e == "" {
 		env = "production"
+	} else if os.Getenv("ENV") == "test" {
+		env = "test"
 	}
 
 	once.Do(func() {
@@ -107,7 +109,11 @@ func Init(e string) {
 			panic(err)
 		}
 		var filePath string
-		filePath = p + "/infrastructure/config/database.yml"
+		if env == "development" {
+			filePath = p + "/infrastructure/config/database.yml"
+		} else {
+			filePath = p + "/config/database.yml"
+		}
 
 		var conf map[string]Config
 		buf, err := ioutil.ReadFile(filePath)
