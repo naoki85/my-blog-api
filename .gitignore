@@ -1,4 +1,3 @@
 .idea
 config/database.yml
-infrastructure/config/database.yml
 main

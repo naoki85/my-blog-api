@@ -8,6 +8,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"sync"
 )
 
@@ -110,9 +111,11 @@ func Init(e string) {
 		}
 		var filePath string
 		if env == "development" {
-			filePath = p + "/infrastructure/config/database.yml"
+			filePath = filepath.Join(p, "/infrastructure/config/database.yml")
+		} else if env == "test" {
+			filePath = filepath.Join(p, "../config/database.yml")
 		} else {
-			filePath = p + "/config/database.yml"
+			filePath = filepath.Join(p, "/config/database.yml")
 		}
 
 		var conf map[string]Config
