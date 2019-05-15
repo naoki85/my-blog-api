@@ -128,20 +128,6 @@ func (a *api) allPosts(w http.ResponseWriter, r *http.Request, p httprouter.Para
 	a.ok(w, data)
 }
 
-func (a *api) recommendedBooks(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	recommendedBooks, err := FindAllRecommendedBooks(a.db, ParamsForFindAll{Limit: 4})
-	if err != nil {
-		a.fail(w, "Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	data := struct {
-		RecommendedBooks []*RecommendedBook
-	}{recommendedBooks}
-
-	a.ok(w, data)
-}
-
 func (a *api) handleOption(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	if len(os.Args) > 1 {
 		w.Header().Add("Access-Control-Allow-Origin", "http://localhost:3035")
@@ -175,8 +161,7 @@ func main() {
 	router.GET("/all_posts", app.allPosts)
 	router.GET("/posts/:id", app.postById)
 	router.GET("/posts", app.posts)
-	router.GET("/recommended_books", app.recommendedBooks)
-	router.GET("/new_recommended_books", NewRecommendedBooks)
+	router.GET("/recommended_books", NewRecommendedBooks)
 	http.ListenAndServe(":8080", router)
 }
 
