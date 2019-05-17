@@ -110,9 +110,7 @@ func Init(e string) {
 			panic(err)
 		}
 		var filePath string
-		if env == "development" {
-			filePath = filepath.Join(p, "/infrastructure/config/database.yml")
-		} else if env == "test" {
+		if env == "test" {
 			filePath = filepath.Join(p, "../config/database.yml")
 		} else {
 			filePath = filepath.Join(p, "/config/database.yml")
