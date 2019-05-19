@@ -161,8 +161,15 @@ func main() {
 	router.GET("/all_posts", app.allPosts)
 	router.GET("/posts/:id", app.postById)
 	router.GET("/posts", app.posts)
+	router.GET("/new_posts", NewPosts)
 	router.GET("/recommended_books", NewRecommendedBooks)
 	http.ListenAndServe(":8080", router)
+}
+
+func NewPosts(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	sqlHandler, _ := infrastructure.NewSqlHandler()
+	postController := controllers.NewPostController(sqlHandler)
+	postController.Index(w, r, p)
 }
 
 func NewRecommendedBooks(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
