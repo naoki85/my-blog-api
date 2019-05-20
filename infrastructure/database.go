@@ -111,7 +111,7 @@ func Init(e string) {
 		}
 		var filePath string
 		if env == "test" {
-			filePath = filepath.Join(p, "../config/database.yml")
+			filePath = "/Users/yoneyamanaoki/go/src/github.com/naoki85/my_blog_api/config/database.yml"
 		} else {
 			filePath = filepath.Join(p, "/config/database.yml")
 		}

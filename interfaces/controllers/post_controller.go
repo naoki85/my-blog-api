@@ -4,6 +4,7 @@ import (
 	"github.com/naoki85/my_blog_api/interfaces/database"
 	"github.com/naoki85/my_blog_api/models"
 	"github.com/naoki85/my_blog_api/usecase"
+	"strings"
 )
 
 type PostController struct {
@@ -26,6 +27,9 @@ func (controller *PostController) Index(w ResponseWriter, r Request, p Params) {
 	if err != nil {
 		fail(w, err.Error(), 404)
 		return
+	}
+	for _, p := range posts {
+		p.PublishedAt = strings.Split(p.PublishedAt, "T")[0]
 	}
 
 	data := struct {

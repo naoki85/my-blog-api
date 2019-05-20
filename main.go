@@ -110,24 +110,6 @@ func (a *api) postById(w http.ResponseWriter, r *http.Request, p httprouter.Para
 	a.ok(w, post)
 }
 
-func (a *api) allPosts(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	posts, err := FindAllPosts(a.db)
-	if err != nil {
-		a.fail(w, "Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	for _, p := range posts {
-		p.PublishedAt = strings.Split(p.PublishedAt, "T")[0]
-	}
-
-	data := struct {
-		Posts []*Post
-	}{posts}
-
-	a.ok(w, data)
-}
-
 func (a *api) handleOption(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	if len(os.Args) > 1 {
 		w.Header().Add("Access-Control-Allow-Origin", "http://localhost:3035")
@@ -158,15 +140,14 @@ func main() {
 	app := &api{db: db}
 
 	router.OPTIONS("/*path", app.handleOption)
-	router.GET("/all_posts", app.allPosts)
+	router.GET("/all_posts", AllPosts)
 	router.GET("/posts/:id", app.postById)
 	router.GET("/posts", app.posts)
-	router.GET("/new_posts", NewPosts)
 	router.GET("/recommended_books", NewRecommendedBooks)
 	http.ListenAndServe(":8080", router)
 }
 
-func NewPosts(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func AllPosts(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	sqlHandler, _ := infrastructure.NewSqlHandler()
 	postController := controllers.NewPostController(sqlHandler)
 	postController.Index(w, r, p)

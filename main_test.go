@@ -168,9 +168,8 @@ func TestShouldGetAllPosts(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected while creating request", err)
 	}
 
-	app := &api{db}
 	router := httprouter.New()
-	router.GET("/all_posts", app.allPosts)
+	router.GET("/all_posts", AllPosts)
 
 	req, err := http.NewRequest("GET", "http://localhost:8080/all_posts", nil)
 	if err != nil {
