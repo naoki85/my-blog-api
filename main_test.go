@@ -10,6 +10,7 @@ import (
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 )
 
@@ -25,20 +26,12 @@ func (a *api) assertJSON(actual []byte, data interface{}, t *testing.T) {
 }
 
 func TestShouldGetPosts(t *testing.T) {
-	dsn := fmt.Sprintf("root:root@tcp(0.0.0.0:3306)/book_recorder_test?parseTime=true&loc=Local")
-	db, err := sql.Open("mysql", dsn)
-	if err != nil {
-		panic(err.Error())
-	}
-	defer func() {
-		_, _ = db.Exec("DELETE FROM posts")
-		_, _ = db.Exec("DELETE FROM post_categories")
-		db.Close()
-	}()
+	db, tearDown := InitTestDb()
+	defer tearDown()
 
 	statement := "insert into posts (id, user_id, post_category_id, title, content, image_file_name, active, published_at, created_at, updated_at)"
 	statement = statement + " values (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())"
-	_, err = db.Exec(statement, 1, 1, 1, "test title 1", "test content 1", "image_1", 1, "2019-01-01 00:00:00")
+	_, err := db.Exec(statement, 1, 1, 1, "test title 1", "test content 1", "image_1", 1, "2019-01-01 00:00:00")
 	_, err = db.Exec(statement, 2, 1, 1, "test title 2", "test content 2", "image_2", 1, "2019-01-02 00:00:00")
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected while creating request", err)
@@ -49,7 +42,6 @@ func TestShouldGetPosts(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected while creating request", err)
 	}
 
-	// create app with mocked db, request and response to test
 	app := &api{db}
 	router := httprouter.New()
 	router.GET("/posts", app.posts)
@@ -156,6 +148,55 @@ func TestShouldGetPost(t *testing.T) {
 	}
 }
 
+func TestShouldGetAllPosts(t *testing.T) {
+	db, tearDown := InitTestDb()
+	defer tearDown()
+
+	for i := 1; i <= 20; i++ {
+		iToStr := strconv.Itoa(i)
+		statement := "insert into posts (id, user_id, post_category_id, title, content, image_file_name, active, published_at, created_at, updated_at)"
+		statement = statement + " values (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())"
+		_, err := db.Exec(statement, i, 1, 1, "test title "+iToStr, "test content "+iToStr, "image_"+iToStr, 1, "2019-01-01 00:00:00")
+		if err != nil {
+			t.Fatalf("an error '%s' was not expected while creating request", err)
+		}
+	}
+
+	statement := "insert into post_categories (id, name, color, created_at, updated_at) values (?, ?, ?, NOW(), NOW())"
+	_, err := db.Exec(statement, 1, "Not categorized", "")
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected while creating request", err)
+	}
+
+	app := &api{db}
+	router := httprouter.New()
+	router.GET("/all_posts", app.allPosts)
+
+	req, err := http.NewRequest("GET", "http://localhost:8080/all_posts", nil)
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected while creating request", err)
+	}
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != 200 {
+		t.Fatalf("expected status code to be 200, but got: %v", w.Body)
+	}
+
+	var TestResponse struct {
+		TotalPage int
+		Posts     Posts
+	}
+
+	Bytes := []byte(w.Body.Bytes())
+	json.Unmarshal(Bytes, &TestResponse)
+
+	if len(TestResponse.Posts) != 20 {
+		t.Fatalf("Fail expected: 20, got: %v", len(TestResponse.Posts))
+	}
+}
+
 func TestShouldRespondWithErrorOnNoPost(t *testing.T) {
 	t.Skip("temporary skip")
 	db, mock, err := sqlmock.New()
@@ -189,5 +230,18 @@ func TestShouldRespondWithErrorOnNoPost(t *testing.T) {
 	// we make sure that all expectations were met
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func InitTestDb() (*sql.DB, func()) {
+	dsn := fmt.Sprintf("root:root@tcp(0.0.0.0:3306)/book_recorder_test?parseTime=true&loc=Local")
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		panic(err.Error())
+	}
+	return db, func() {
+		_, _ = db.Exec("DELETE FROM posts")
+		_, _ = db.Exec("DELETE FROM post_categories")
+		db.Close()
 	}
 }
