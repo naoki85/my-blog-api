@@ -50,6 +50,12 @@ func (handler *MockSqlHandler) ResistMockForPost(statement string, fields []stri
 	handler.Mock.ExpectQuery(statement).WillReturnRows(rows)
 }
 
+func (handler *MockSqlHandler) ResistMockForPostCategory(statement string, fields []string, args ...interface{}) {
+	rows := sqlmock.NewRows(fields).
+		AddRow(1, "AWS", "#111111")
+	handler.Mock.ExpectQuery(statement).WillReturnRows(rows)
+}
+
 func (handler *MockSqlHandler) Execute(statement string, args ...interface{}) (Result, error) {
 	res := SqlResult{}
 	result, err := handler.Conn.Exec(statement, args...)
