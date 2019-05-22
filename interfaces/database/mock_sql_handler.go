@@ -36,11 +36,17 @@ func (handler *MockSqlHandler) ResistMock(statement string, fields []string, arg
 
 func (handler *MockSqlHandler) ResistMockForPosts(statement string, fields []string, args ...interface{}) {
 	rows := sqlmock.NewRows(fields).
-	  AddRow(1, 1, "test title 1", "test content 1", "image_1", "2019-01-01 00:00:00").
+		AddRow(1, 1, "test title 1", "test content 1", "image_1", "2019-01-01 00:00:00").
 		AddRow(2, 1, "test title 2", "test content 2", "image_2", "2019-01-02 00:00:00").
 		AddRow(3, 1, "test title 3", "test content 3", "image_3", "2019-01-03 00:00:00").
 		AddRow(4, 1, "test title 4", "test content 4", "image_4", "2019-01-04 00:00:00").
 		AddRow(5, 1, "test title 5", "test content 5", "image_5", "2019-01-05 00:00:00")
+	handler.Mock.ExpectQuery(statement).WillReturnRows(rows)
+}
+
+func (handler *MockSqlHandler) ResistMockForPost(statement string, fields []string, args ...interface{}) {
+	rows := sqlmock.NewRows(fields).
+		AddRow(1, 1, "test title 1", "test content 1", "image_1", "2019-01-01 00:00:00")
 	handler.Mock.ExpectQuery(statement).WillReturnRows(rows)
 }
 

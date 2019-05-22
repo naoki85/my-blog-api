@@ -109,42 +109,43 @@ func TestShouldRespondWithErrorOnFailure(t *testing.T) {
 }
 
 func TestShouldGetPost(t *testing.T) {
-	t.Skip("temporary skip")
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-	}
-	defer db.Close()
+	db, tearDown := InitTestDb()
+	defer tearDown()
 
-	// create app with mocked db, request and response to test
+	statement := "insert into posts (id, user_id, post_category_id, title, content, image_file_name, active, published_at, created_at, updated_at)"
+	statement = statement + " values (1, 1, 1, ?, ?, ?, ?, ?, NOW(), NOW())"
+	_, err := db.Exec(statement, "test title 1", "test content 1", "image_1", 1, "2019-01-01 00:00:00")
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected while creating request", err)
+	}
+
 	app := &api{db}
 	router := httprouter.New()
-	router.GET("/posts/1", app.postById)
+	router.GET("/posts/:id", NewGetPost)
 
-	req, err := http.NewRequest("GET", "http://localhost/posts/1", nil)
+	req, err := http.NewRequest("GET", "http://localhost:8080/posts/1", nil)
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected while creating request", err)
 	}
 	w := httptest.NewRecorder()
-
-	// before we actually execute our api function, we need to expect required DB actions
-	rows := sqlmock.NewRows([]string{"id", "post_category_id", "title", "content", "published_at"}).
-		AddRow(1, 1, "test title 1", "test content 1", "2019-01-01 00:00:00")
-
-	mock.ExpectQuery("^SELECT (.+) FROM posts").WillReturnRows(rows)
-
 	router.ServeHTTP(w, req)
 
 	if w.Code != 200 {
-		t.Fatalf("expected status code to be 200, but got: %d", w.Code)
+		t.Fatalf("expected status code to be 200, but got: %v", w.Body)
 	}
 
-	data := Post{Id: 1, PostCategoryId: 1, Title: "test title 1", ImageUrl: "test.jpg", PublishedAt: "2019-01-01 00:00:00"}
+	data := Post{Id: 1, PostCategoryId: 1, Title: "test title 1", Content: "test content 1", ImageUrl: "http://d29xhtkvbwm2ne.cloudfront.net/image_1", PublishedAt: "2019-01-01"}
 	app.assertJSON(w.Body.Bytes(), data, t)
 
-	// we make sure that all expectations were met
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("there were unfulfilled expectations: %s", err)
+	req, err = http.NewRequest("GET", "http://localhost:8080/posts/2", nil)
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected while creating request", err)
+	}
+	w = httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	if w.Code != 404 {
+		t.Fatalf("expected status code to be 404, but got: %v", w.Body)
 	}
 }
 
@@ -197,38 +198,28 @@ func TestShouldGetAllPosts(t *testing.T) {
 }
 
 func TestShouldRespondWithErrorOnNoPost(t *testing.T) {
-	t.Skip("temporary skip")
-	db, mock, err := sqlmock.New()
+	db, tearDown := InitTestDb()
+	defer tearDown()
+
+	statement := "insert into posts (id, user_id, post_category_id, title, content, image_file_name, active, published_at, created_at, updated_at)"
+	statement = statement + " values (1, 1, 1, ?, ?, ?, ?, ?, NOW(), NOW())"
+	_, err := db.Exec(statement, "test title 1", "test content 1", "image_1", 1, "2019-01-01 00:00:00")
 	if err != nil {
-		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+		t.Fatalf("an error '%s' was not expected while creating request", err)
 	}
-	defer db.Close()
 
-	// create app with mocked db, request and response to test
-	app := &api{db}
 	router := httprouter.New()
-	router.GET("/posts/1", app.postById)
+	router.GET("/posts/:id", NewGetPost)
 
-	req, err := http.NewRequest("GET", "http://localhost/posts/1", nil)
+	req, err := http.NewRequest("GET", "http://localhost:8080/posts/2", nil)
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected while creating request", err)
 	}
 	w := httptest.NewRecorder()
-
-	// before we actually execute our api function, we need to expect required DB actions
-	rows := sqlmock.NewRows([]string{"id", "title", "content", "published_at"})
-
-	mock.ExpectQuery("^SELECT (.+) FROM posts").WillReturnRows(rows)
-
 	router.ServeHTTP(w, req)
 
 	if w.Code != 404 {
-		t.Fatalf("expected status code to be 200, but got: %d", w.Code)
-	}
-
-	// we make sure that all expectations were met
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("there were unfulfilled expectations: %s", err)
+		t.Fatalf("expected status code to be 404, but got: %v", w.Body)
 	}
 }
 

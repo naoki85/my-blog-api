@@ -4,6 +4,7 @@ import (
 	"github.com/naoki85/my_blog_api/interfaces/database"
 	"github.com/naoki85/my_blog_api/models"
 	"github.com/naoki85/my_blog_api/usecase"
+	"strconv"
 	"strings"
 )
 
@@ -36,4 +37,18 @@ func (controller *PostController) Index(w ResponseWriter, r Request, p Params) {
 		Posts models.Posts
 	}{posts}
 	ok(w, data)
+}
+
+func (controller *PostController) Show(w ResponseWriter, r Request, p Params) {
+	postId, err := strconv.Atoi(p.ByName("id"))
+	if err != nil {
+		fail(w, "Invalid Parameter", 400)
+		return
+	}
+	post, err := controller.Interactor.FindById(postId)
+	if err != nil || post.Id == 0 {
+		fail(w, "Not Found", 404)
+		return
+	}
+	ok(w, post)
 }

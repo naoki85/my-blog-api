@@ -90,26 +90,6 @@ func (a *api) posts(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 	a.ok(w, data)
 }
 
-func (a *api) postById(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	postId, err := strconv.Atoi(p.ByName("id"))
-	if err != nil {
-		a.fail(w, "Not Found", 404)
-		return
-	}
-	post, err := FindPostById(a.db, postId)
-	if err != nil {
-		a.fail(w, "failed to fetch posts: "+err.Error(), 500)
-		return
-	}
-	if post.Id == 0 && post.Title == "" {
-		a.fail(w, "Not found", 404)
-		return
-	}
-	post.PublishedAt = strings.Split(post.PublishedAt, "T")[0]
-	post.ImageUrl = "http://d29xhtkvbwm2ne.cloudfront.net/" + post.ImageUrl
-	a.ok(w, post)
-}
-
 func (a *api) handleOption(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	if len(os.Args) > 1 {
 		w.Header().Add("Access-Control-Allow-Origin", "http://localhost:3035")
@@ -141,7 +121,7 @@ func main() {
 
 	router.OPTIONS("/*path", app.handleOption)
 	router.GET("/all_posts", AllPosts)
-	router.GET("/posts/:id", app.postById)
+	router.GET("/posts/:id", NewGetPost)
 	router.GET("/posts", app.posts)
 	router.GET("/recommended_books", NewRecommendedBooks)
 	http.ListenAndServe(":8080", router)
@@ -157,6 +137,12 @@ func NewRecommendedBooks(w http.ResponseWriter, r *http.Request, p httprouter.Pa
 	sqlHandler, _ := infrastructure.NewSqlHandler()
 	recommendedBookController := controllers.NewRecommendedBookController(sqlHandler)
 	recommendedBookController.Index(w, r, p)
+}
+
+func NewGetPost(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	sqlHandler, _ := infrastructure.NewSqlHandler()
+	postController := controllers.NewPostController(sqlHandler)
+	postController.Show(w, r, p)
 }
 
 func (a *api) fail(w http.ResponseWriter, msg string, status int) {
