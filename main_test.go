@@ -7,14 +7,13 @@ import (
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	. "github.com/naoki85/my_blog_api/models"
-	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
 )
 
-func (a *api) assertJSON(actual []byte, data interface{}, t *testing.T) {
+func assertJSON(actual []byte, data interface{}, t *testing.T) {
 	expected, err := json.Marshal(data)
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when marshaling expected json data", err)
@@ -42,9 +41,8 @@ func TestShouldGetPosts(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected while creating request", err)
 	}
 
-	app := &api{db}
 	router := httprouter.New()
-	router.GET("/posts", app.posts)
+	router.GET("/posts", NewPostsIndex)
 
 	req, err := http.NewRequest("GET", "http://localhost:8080/posts", nil)
 	if err != nil {
@@ -59,54 +57,41 @@ func TestShouldGetPosts(t *testing.T) {
 	}
 
 	data := struct {
-		TotalPage int
-		Posts     []*Post
+		//TotalPage int
+		Posts []*Post
 	}{
-		TotalPage: 1,
+		//TotalPage: 1,
 		Posts: []*Post{
 			{Id: 2, PostCategoryId: 1, Title: "test title 2", ImageUrl: "http://d29xhtkvbwm2ne.cloudfront.net/image_2", PublishedAt: "2019-01-02", PostCategory: PostCategory{Id: 1, Name: "Not categorized", Color: ""}},
 			{Id: 1, PostCategoryId: 1, Title: "test title 1", ImageUrl: "http://d29xhtkvbwm2ne.cloudfront.net/image_1", PublishedAt: "2019-01-01", PostCategory: PostCategory{Id: 1, Name: "Not categorized", Color: ""}},
 		}}
-	app.assertJSON(w.Body.Bytes(), data, t)
+	assertJSON(w.Body.Bytes(), data, t)
 }
 
-func TestShouldRespondWithErrorOnFailure(t *testing.T) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-	}
-	defer db.Close()
-
-	// create app with mocked db, request and response to test
-	app := &api{db}
-	router := httprouter.New()
-	router.GET("/posts", app.posts)
-
-	req, err := http.NewRequest("GET", "http://localhost/posts", nil)
-	if err != nil {
-		t.Fatalf("an error '%s' was not expected while creating request", err)
-	}
-	w := httptest.NewRecorder()
-
-	// before we actually execute our api function, we need to expect required DB actions
-	mock.ExpectQuery("^SELECT (.+) FROM posts .*").WillReturnError(fmt.Errorf("some error"))
-
-	router.ServeHTTP(w, req)
-
-	if w.Code != 500 {
-		t.Fatalf("expected status code to be 500, but got: %d", w.Code)
-	}
-
-	data := struct {
-		Error string
-	}{"failed to fetch posts: some error"}
-	app.assertJSON(w.Body.Bytes(), data, t)
-
-	// we make sure that all expectations were met
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("there were unfulfilled expectations: %s", err)
-	}
-}
+// TODO: レコードが何もないときは空配列を返すようにする
+//func TestShouldRespondEmptyArrayOnNoData(t *testing.T) {
+//	_, tearDown := InitTestDb()
+//	defer tearDown()
+//
+//	router := httprouter.New()
+//	router.GET("/posts", NewPostsIndex)
+//
+//	req, err := http.NewRequest("GET", "http://localhost/posts", nil)
+//	if err != nil {
+//		t.Fatalf("an error '%s' was not expected while creating request", err)
+//	}
+//	w := httptest.NewRecorder()
+//	router.ServeHTTP(w, req)
+//
+//	if w.Code != 200 {
+//		t.Fatalf("expected status code to be 200, but got: %d", w.Code)
+//	}
+//
+//	data := struct {
+//		Posts Posts
+//	}{Posts{}}
+//	assertJSON(w.Body.Bytes(), data, t)
+//}
 
 func TestShouldGetPost(t *testing.T) {
 	db, tearDown := InitTestDb()
@@ -119,7 +104,6 @@ func TestShouldGetPost(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected while creating request", err)
 	}
 
-	app := &api{db}
 	router := httprouter.New()
 	router.GET("/posts/:id", NewGetPost)
 
@@ -135,7 +119,7 @@ func TestShouldGetPost(t *testing.T) {
 	}
 
 	data := Post{Id: 1, PostCategoryId: 1, Title: "test title 1", Content: "test content 1", ImageUrl: "http://d29xhtkvbwm2ne.cloudfront.net/image_1", PublishedAt: "2019-01-01"}
-	app.assertJSON(w.Body.Bytes(), data, t)
+	assertJSON(w.Body.Bytes(), data, t)
 
 	req, err = http.NewRequest("GET", "http://localhost:8080/posts/2", nil)
 	if err != nil {

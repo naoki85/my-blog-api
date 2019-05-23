@@ -38,6 +38,30 @@ func (repo *PostRepository) All(limit int) (posts models.Posts, err error) {
 	return
 }
 
+func (repo *PostRepository) Index(page int) (posts models.Posts, err error) {
+	query := "SELECT id, post_category_id, title, image_file_name, published_at FROM posts WHERE active = 1 AND published_at <= ? ORDER BY published_at DESC"
+	query = query + " LIMIT 10 OFFSET ?"
+	offset := 10 * (page - 1)
+	nowTime := time.Now()
+	rows, err := repo.SqlHandler.Query(query, nowTime, offset)
+	defer rows.Close()
+
+	if err != nil {
+		return posts, err
+	}
+
+	for rows.Next() {
+		p := models.Post{}
+		err := rows.Scan(&p.Id, &p.PostCategoryId, &p.Title, &p.ImageUrl, &p.PublishedAt)
+		if err != nil {
+			return posts, err
+		}
+
+		posts = append(posts, p)
+	}
+	return
+}
+
 func (repo *PostRepository) FindById(id int) (post models.Post, err error) {
 	nowTime := time.Now()
 	query := "SELECT id, post_category_id, title, content, image_file_name, published_at FROM posts WHERE id = ? AND active = 1 AND published_at <= ? LIMIT 1"

@@ -4,6 +4,7 @@ import (
 	"github.com/naoki85/my_blog_api/interfaces/database"
 	"github.com/naoki85/my_blog_api/models"
 	"github.com/naoki85/my_blog_api/usecase"
+	"net/http"
 	"strconv"
 	"strings"
 )
@@ -18,11 +19,14 @@ func NewPostController(sqlHandler database.SqlHandler) *PostController {
 			PostRepository: &database.PostRepository{
 				SqlHandler: sqlHandler,
 			},
+			PostCategoryRepository: &database.PostCategoryRepository{
+				SqlHandler: sqlHandler,
+			},
 		},
 	}
 }
 
-func (controller *PostController) Index(w ResponseWriter, r Request, p Params) {
+func (controller *PostController) All(w ResponseWriter, r Request, p Params) {
 	limit := 0
 	posts, err := controller.Interactor.PostRepository.All(limit)
 	if err != nil {
@@ -36,6 +40,52 @@ func (controller *PostController) Index(w ResponseWriter, r Request, p Params) {
 	data := struct {
 		Posts models.Posts
 	}{posts}
+	ok(w, data)
+}
+
+func (controller *PostController) Index(w ResponseWriter, r *http.Request, p Params) {
+	var page int
+	queryPageParam := r.URL.Query().Get("page")
+	if queryPageParam == "" {
+		page = 1
+	} else {
+		page, _ = strconv.Atoi(queryPageParam)
+	}
+	posts, err := controller.Interactor.Index(page)
+	if err != nil {
+		fail(w, err.Error(), 404)
+		return
+	}
+
+	var retPosts models.Posts
+	for _, p := range posts {
+		p.ImageUrl = "http://d29xhtkvbwm2ne.cloudfront.net/" + p.ImageUrl
+		p.PublishedAt = strings.Split(p.PublishedAt, "T")[0]
+
+		retPosts = append(retPosts, p)
+	}
+
+	//count, err := GetPostsCount(a.db)
+	//if err != nil {
+	//	a.fail(w, "failed to scan posts count: "+err.Error(), 500)
+	//	return
+	//}
+	//totalPage := count / 10
+	//mod := count % 10
+	//if mod != 0 {
+	//	totalPage = totalPage + 1
+	//}
+
+	//if rows.Err() != nil {
+	//	a.fail(w, "failed to read all posts: "+rows.Err().Error(), 500)
+	//	return
+	//}
+
+	data := struct {
+		//TotalPage int
+		Posts models.Posts
+	}{retPosts}
+
 	ok(w, data)
 }
 

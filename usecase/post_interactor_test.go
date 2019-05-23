@@ -18,6 +18,16 @@ func (repo *MockPostRepository) All(int) (models.Posts, error) {
 	return posts, nil
 }
 
+func (repo *MockPostRepository) Index(int) (models.Posts, error) {
+	posts := models.Posts{
+		models.Post{Id: 1, PostCategoryId: 1},
+		models.Post{Id: 2, PostCategoryId: 1},
+		models.Post{Id: 3, PostCategoryId: 1},
+		models.Post{Id: 4, PostCategoryId: 1},
+	}
+	return posts, nil
+}
+
 func (repo *MockPostRepository) FindById(int) (models.Post, error) {
 	post := models.Post{
 		Id: 1,
@@ -36,6 +46,23 @@ func TestShouldFindAllPosts(t *testing.T) {
 	}
 	if len(posts) != 4 {
 		t.Fatalf("Fail expected: 4, got: %v", len(posts))
+	}
+}
+
+func TestShouldPostsIndex(t *testing.T) {
+	interactor := PostInteractor{
+		PostRepository:         new(MockPostRepository),
+		PostCategoryRepository: new(MockPostCategoryRepository),
+	}
+	posts, err := interactor.Index(1)
+	if err != nil {
+		t.Fatalf("Cannot get recommended_books: %s", err)
+	}
+	if len(posts) != 4 {
+		t.Fatalf("Fail expected: 4, got: %v", len(posts))
+	}
+	if posts[0].PostCategory.Name != "AWS" {
+		t.Fatalf("Fail expected: AWS, got: %v", posts[0].PostCategory.Name)
 	}
 }
 
