@@ -68,30 +68,30 @@ func TestShouldGetPosts(t *testing.T) {
 	assertJSON(w.Body.Bytes(), data, t)
 }
 
-// TODO: レコードが何もないときは空配列を返すようにする
-//func TestShouldRespondEmptyArrayOnNoData(t *testing.T) {
-//	_, tearDown := InitTestDb()
-//	defer tearDown()
-//
-//	router := httprouter.New()
-//	router.GET("/posts", NewPostsIndex)
-//
-//	req, err := http.NewRequest("GET", "http://localhost/posts", nil)
-//	if err != nil {
-//		t.Fatalf("an error '%s' was not expected while creating request", err)
-//	}
-//	w := httptest.NewRecorder()
-//	router.ServeHTTP(w, req)
-//
-//	if w.Code != 200 {
-//		t.Fatalf("expected status code to be 200, but got: %d", w.Code)
-//	}
-//
-//	data := struct {
-//		Posts Posts
-//	}{Posts{}}
-//	assertJSON(w.Body.Bytes(), data, t)
-//}
+func TestShouldRespondEmptyArrayOnNoData(t *testing.T) {
+	_, tearDown := InitTestDb()
+	defer tearDown()
+
+	router := httprouter.New()
+	router.GET("/posts", NewPostsIndex)
+
+	req, err := http.NewRequest("GET", "http://localhost/posts", nil)
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected while creating request", err)
+	}
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	if w.Code != 200 {
+		t.Fatalf("expected status code to be 200, but got: %d", w.Code)
+	}
+
+	data := struct {
+		TotalPage int
+		Posts     Posts
+	}{0, Posts{}}
+	assertJSON(w.Body.Bytes(), data, t)
+}
 
 func TestShouldGetPost(t *testing.T) {
 	db, tearDown := InitTestDb()

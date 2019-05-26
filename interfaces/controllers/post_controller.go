@@ -58,6 +58,11 @@ func (controller *PostController) Index(w ResponseWriter, r *http.Request, p Par
 	}
 
 	var retPosts models.Posts
+
+	if len(posts) == 0 {
+		retPosts = models.Posts{}
+	}
+
 	for _, p := range posts {
 		p.ImageUrl = "http://d29xhtkvbwm2ne.cloudfront.net/" + p.ImageUrl
 		p.PublishedAt = strings.Split(p.PublishedAt, "T")[0]
