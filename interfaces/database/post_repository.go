@@ -79,3 +79,20 @@ func (repo *PostRepository) FindById(id int) (post models.Post, err error) {
 	}
 	return
 }
+
+func (repo *PostRepository) GetPostsCount() (count int, err error) {
+	nowTime := time.Now()
+	query := "SELECT COUNT(*) FROM posts WHERE active = 1 AND published_at <= ? LIMIT 1"
+	rows, err := repo.SqlHandler.Query(query, nowTime)
+	if err != nil {
+		return 0, err
+	}
+	for rows.Next() {
+		err := rows.Scan(&count)
+		if err != nil {
+			return 0, err
+		}
+		break
+	}
+	return
+}

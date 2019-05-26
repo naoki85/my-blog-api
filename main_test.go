@@ -57,10 +57,10 @@ func TestShouldGetPosts(t *testing.T) {
 	}
 
 	data := struct {
-		//TotalPage int
-		Posts []*Post
+		TotalPage int
+		Posts     []*Post
 	}{
-		//TotalPage: 1,
+		TotalPage: 1,
 		Posts: []*Post{
 			{Id: 2, PostCategoryId: 1, Title: "test title 2", ImageUrl: "http://d29xhtkvbwm2ne.cloudfront.net/image_2", PublishedAt: "2019-01-02", PostCategory: PostCategory{Id: 1, Name: "Not categorized", Color: ""}},
 			{Id: 1, PostCategoryId: 1, Title: "test title 1", ImageUrl: "http://d29xhtkvbwm2ne.cloudfront.net/image_1", PublishedAt: "2019-01-01", PostCategory: PostCategory{Id: 1, Name: "Not categorized", Color: ""}},

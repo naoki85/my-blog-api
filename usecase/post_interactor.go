@@ -38,3 +38,11 @@ func (interactor *PostInteractor) FindById(id int) (models.Post, error) {
 	post.ImageUrl = "http://d29xhtkvbwm2ne.cloudfront.net/" + post.ImageUrl
 	return post, err
 }
+
+func (interactor *PostInteractor) GetPostsCount() (int, error) {
+	count, err := interactor.PostRepository.GetPostsCount()
+	if err != nil {
+		return count, err
+	}
+	return count, err
+}

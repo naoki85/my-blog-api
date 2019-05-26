@@ -65,26 +65,21 @@ func (controller *PostController) Index(w ResponseWriter, r *http.Request, p Par
 		retPosts = append(retPosts, p)
 	}
 
-	//count, err := GetPostsCount(a.db)
-	//if err != nil {
-	//	a.fail(w, "failed to scan posts count: "+err.Error(), 500)
-	//	return
-	//}
-	//totalPage := count / 10
-	//mod := count % 10
-	//if mod != 0 {
-	//	totalPage = totalPage + 1
-	//}
-
-	//if rows.Err() != nil {
-	//	a.fail(w, "failed to read all posts: "+rows.Err().Error(), 500)
-	//	return
-	//}
+	count, err := controller.Interactor.GetPostsCount()
+	if err != nil {
+		fail(w, "failed to scan posts count: "+err.Error(), 500)
+		return
+	}
+	totalPage := count / 10
+	mod := count % 10
+	if mod != 0 {
+		totalPage = totalPage + 1
+	}
 
 	data := struct {
-		//TotalPage int
-		Posts models.Posts
-	}{retPosts}
+		TotalPage int
+		Posts     models.Posts
+	}{totalPage, retPosts}
 
 	ok(w, data)
 }

@@ -35,11 +35,12 @@ func (repo *MockPostRepository) FindById(int) (models.Post, error) {
 	return post, nil
 }
 
+func (repo *MockPostRepository) GetPostsCount() (int, error) {
+	return 10, nil
+}
+
 func TestShouldFindAllPosts(t *testing.T) {
-	repo := new(MockPostRepository)
-	interactor := PostInteractor{
-		PostRepository: repo,
-	}
+	interactor := initInteractor()
 	posts, err := interactor.PostRepository.All(4)
 	if err != nil {
 		t.Fatalf("Cannot get recommended_books: %s", err)
@@ -50,10 +51,7 @@ func TestShouldFindAllPosts(t *testing.T) {
 }
 
 func TestShouldPostsIndex(t *testing.T) {
-	interactor := PostInteractor{
-		PostRepository:         new(MockPostRepository),
-		PostCategoryRepository: new(MockPostCategoryRepository),
-	}
+	interactor := initInteractor()
 	posts, err := interactor.Index(1)
 	if err != nil {
 		t.Fatalf("Cannot get recommended_books: %s", err)
@@ -67,15 +65,30 @@ func TestShouldPostsIndex(t *testing.T) {
 }
 
 func TestShouldFindPostById(t *testing.T) {
-	repo := new(MockPostRepository)
-	interactor := PostInteractor{
-		PostRepository: repo,
-	}
-	post, err := interactor.PostRepository.FindById(1)
+	interactor := initInteractor()
+	post, err := interactor.FindById(1)
 	if err != nil {
 		t.Fatalf("Cannot get recommended_books: %s", err)
 	}
 	if post.Id != 1 {
 		t.Fatalf("Fail expected id: 1, got: %v", post)
+	}
+}
+
+func TestShouldGetPostsCount(t *testing.T) {
+	interactor := initInteractor()
+	count, err := interactor.GetPostsCount()
+	if err != nil {
+		t.Fatalf("Cannot get recommended_books: %s", err)
+	}
+	if count != 10 {
+		t.Fatalf("Fail expected count: 10, got: %v", count)
+	}
+}
+
+func initInteractor() PostInteractor {
+	return PostInteractor{
+		PostRepository:         new(MockPostRepository),
+		PostCategoryRepository: new(MockPostCategoryRepository),
 	}
 }
