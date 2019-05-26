@@ -32,6 +32,7 @@ func TestShouldGetPosts(t *testing.T) {
 	statement = statement + " values (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())"
 	_, err := db.Exec(statement, 1, 1, 1, "test title 1", "test content 1", "image_1", 1, "2019-01-01 00:00:00")
 	_, err = db.Exec(statement, 2, 1, 1, "test title 2", "test content 2", "image_2", 1, "2019-01-02 00:00:00")
+	_, err = db.Exec(statement, 3, 1, 1, "test title 2", "test content 2", "", 1, "2019-01-03 00:00:00")
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected while creating request", err)
 	}
@@ -62,6 +63,7 @@ func TestShouldGetPosts(t *testing.T) {
 	}{
 		TotalPage: 1,
 		Posts: []*Post{
+			{Id: 3, PostCategoryId: 1, Title: "test title 2", ImageUrl: "https://s3-ap-northeast-1.amazonaws.com/bookrecorder-image/commons/default_user_icon.png", PublishedAt: "2019-01-03", PostCategory: PostCategory{Id: 1, Name: "Not categorized", Color: ""}},
 			{Id: 2, PostCategoryId: 1, Title: "test title 2", ImageUrl: "http://d29xhtkvbwm2ne.cloudfront.net/image_2", PublishedAt: "2019-01-02", PostCategory: PostCategory{Id: 1, Name: "Not categorized", Color: ""}},
 			{Id: 1, PostCategoryId: 1, Title: "test title 1", ImageUrl: "http://d29xhtkvbwm2ne.cloudfront.net/image_1", PublishedAt: "2019-01-01", PostCategory: PostCategory{Id: 1, Name: "Not categorized", Color: ""}},
 		}}

@@ -64,7 +64,11 @@ func (controller *PostController) Index(w ResponseWriter, r *http.Request, p Par
 	}
 
 	for _, p := range posts {
-		p.ImageUrl = "http://d29xhtkvbwm2ne.cloudfront.net/" + p.ImageUrl
+		if p.ImageUrl == "" {
+			p.ImageUrl = "https://s3-ap-northeast-1.amazonaws.com/bookrecorder-image/commons/default_user_icon.png"
+		} else {
+			p.ImageUrl = "http://d29xhtkvbwm2ne.cloudfront.net/" + p.ImageUrl
+		}
 		p.PublishedAt = strings.Split(p.PublishedAt, "T")[0]
 
 		retPosts = append(retPosts, p)
