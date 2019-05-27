@@ -181,6 +181,12 @@ func TestShouldGetAllPosts(t *testing.T) {
 	if len(TestResponse.Posts) != 20 {
 		t.Fatalf("Fail expected: 20, got: %v", len(TestResponse.Posts))
 	}
+	if TestResponse.Posts[0].ImageUrl != "http://d29xhtkvbwm2ne.cloudfront.net/image_1" {
+		t.Fatalf("Fail to match value, expected: http://d29xhtkvbwm2ne.cloudfront.net/image_1, got: %v", TestResponse.Posts[0].ImageUrl)
+	}
+	if TestResponse.Posts[0].PublishedAt != "2019-01-01" {
+		t.Fatalf("Fail to match value, expected: 2019-01-01, got: %v", TestResponse.Posts[0].PublishedAt)
+	}
 }
 
 func TestShouldRespondWithErrorOnNoPost(t *testing.T) {

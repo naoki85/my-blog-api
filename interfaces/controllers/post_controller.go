@@ -28,18 +28,31 @@ func NewPostController(sqlHandler database.SqlHandler) *PostController {
 
 func (controller *PostController) All(w ResponseWriter, r Request, p Params) {
 	limit := 0
-	posts, err := controller.Interactor.PostRepository.All(limit)
+	posts, err := controller.Interactor.All(limit)
 	if err != nil {
 		fail(w, err.Error(), 404)
 		return
 	}
+
+	var retPosts models.Posts
+	if len(posts) == 0 {
+		retPosts = models.Posts{}
+	}
+
 	for _, p := range posts {
+		if p.ImageUrl == "" {
+			p.ImageUrl = "https://s3-ap-northeast-1.amazonaws.com/bookrecorder-image/commons/default_user_icon.png"
+		} else {
+			p.ImageUrl = "http://d29xhtkvbwm2ne.cloudfront.net/" + p.ImageUrl
+		}
 		p.PublishedAt = strings.Split(p.PublishedAt, "T")[0]
+
+		retPosts = append(retPosts, p)
 	}
 
 	data := struct {
 		Posts models.Posts
-	}{posts}
+	}{retPosts}
 	ok(w, data)
 }
 
