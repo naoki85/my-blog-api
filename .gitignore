@@ -2,3 +2,4 @@
 .vscode
 config/database.yml
 main
+my_blog_api
