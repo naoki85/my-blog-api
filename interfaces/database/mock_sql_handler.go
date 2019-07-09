@@ -2,7 +2,7 @@ package database
 
 import (
 	"database/sql"
-	"gopkg.in/DATA-DOG/go-sqlmock.v1"
+	"gopkg.in/DATA-DOG/go-sqlmock.v2"
 )
 
 type MockSqlHandler struct {
@@ -16,9 +16,6 @@ func NewMockSqlHandler() (*MockSqlHandler, error) {
 		panic(err.Error())
 	}
 
-	if err != nil {
-		panic(err.Error)
-	}
 	sqlHandler := new(MockSqlHandler)
 	sqlHandler.Conn = db
 	sqlHandler.Mock = mock
